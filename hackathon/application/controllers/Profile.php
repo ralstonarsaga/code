@@ -8,8 +8,7 @@ class profile extends CI_Controller
 		$this->load->library('session');
 		$this->load->database();
 		$this->load->model('user_model');
-	}
-	
+	}	
 	function index()
 	{
 		$details = $this->user_model->get_user_by_id($this->session->userdata('uid'));

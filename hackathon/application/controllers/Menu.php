@@ -6,7 +6,6 @@ class Menu extends CI_Controller
 		parent::__constructor();
 		$this->load->helper(array('url', 'html'));
 	}
-
 	// this is the home page
 	public function index() 
 	{

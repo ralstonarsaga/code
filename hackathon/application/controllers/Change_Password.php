@@ -35,7 +35,6 @@ class change_password extends CI_Controller
 
 					$data = array('password' => $this->input->post('new_password'));
 
-
 					if ($this->user_model->update_user($userid, $old_password, $data))
 					{
 						$this->session->set_flashdata('msg','<div class="alert alert-success text-center">You are Successfully Updated your Password.</div>');
@@ -47,7 +46,6 @@ class change_password extends CI_Controller
 						$this->session->set_flashdata('msg','<div class="alert alert-danger text-center">Oops! Error.  Please try again.</div>');
 						redirect('change_password/index');
 					}
-
 
 			}
 

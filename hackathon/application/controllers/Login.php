@@ -15,7 +15,7 @@ class login extends CI_Controller
 		$userid = $this->input->post("userid");
         $password = $this->input->post("password");
 
-		// form validation
+		// form validations
 		$this->form_validation->set_rules("userid", "User ID", "trim|required");
 		$this->form_validation->set_rules("password", "Password", "trim|required");
 		

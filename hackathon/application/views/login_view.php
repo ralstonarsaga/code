@@ -7,11 +7,6 @@
 		<?php $attributes = array("name" => "loginform");
 			echo form_open("login/index", $attributes);?>
 			<legend>Login</legend>
-<!-- 			<div class="form-group">
-				<label for="name">Email-ID</label>
-				<input class="form-control" name="email" placeholder="Enter Email-ID" type="text" value="<?php echo set_value('email'); ?>" />
-				<span class="text-danger"><?php echo form_error('email'); ?></span>
-			</div> -->
 
 			<div class="form-group">
 				<label for="name">User ID</label>
@@ -33,11 +28,6 @@
 		<?php echo $this->session->flashdata('msg'); ?>
 		</div>
 	</div>
-<!-- 	<div class="row">
-		<div class="col-md-4 col-md-offset-4 text-center">	
-		New User? <a href="<?php echo base_url(); ?>signup">Sign Up Here</a>
-		</div>
-	</div> -->
 
 	<div class="row">
 		<div class="col-md-4 col-md-offset-4 text-center">	

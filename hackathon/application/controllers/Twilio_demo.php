@@ -23,7 +23,6 @@ class Twilio_demo extends CI_Controller {
 		else
 			echo 'Sent message to ' . $to;
 	}
-
 }
 
 /* End of file twilio_demo.php */

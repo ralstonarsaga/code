@@ -17,9 +17,9 @@ class signup extends CI_Controller
 		$this->form_validation->set_rules('lname', 'Last Name', 'trim|required|alpha|min_length[3]|max_length[30]');
 		$this->form_validation->set_rules('userid', 'User ID', 'trim|required|alpha|min_length[3]|max_length[30]');
 		$this->form_validation->set_rules('email', 'Email ID', 'trim|required|valid_email|is_unique[user.email]');
+		
 		//$this->form_validation->set_rules('password', 'Password', 'trim|required|matches[cpassword]|md5');
 		//$this->form_validation->set_rules('cpassword', 'Confirm Password', 'trim|required');
-
 		// $this->form_validation->set_rules('password', 'Password', 'trim|required|md5');
 		// $this->form_validation->set_rules('cpassword', 'Confirm Password', 'trim|required|md5|matches[password]');
 

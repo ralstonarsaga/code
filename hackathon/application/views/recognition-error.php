@@ -19,4 +19,5 @@
 		</div>
 	</div>
 </div>
+
 <?php $this->load->view('commons/footer'); ?>

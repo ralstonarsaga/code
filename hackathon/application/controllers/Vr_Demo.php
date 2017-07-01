@@ -11,8 +11,7 @@ public function __construct()
 	}
 
 	function index()
-	{
-		
+	{		
 $img='C:/Users/dsbelando/Desktop/bottle.jpg';
 $url='https://gateway-a.watsonplatform.net/visual-recognition/api/v3/classify?api_key={75aa1f9be365f111a14ac96251f8bb8bebb283a3}&version=2016-05-20';
 

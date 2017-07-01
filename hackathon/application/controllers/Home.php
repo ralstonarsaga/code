@@ -7,7 +7,6 @@ class Home extends CI_Controller
 		$this->load->helper(array('url', 'html'));
 		$this->load->library('session');
 	}
-
 	// this is the home page
 	public function index() 
 	{

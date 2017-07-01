@@ -17,7 +17,7 @@
 </head>
 <body>
 <?php
-    //echo base_url();
+ 
     echo $this->dynamic_menu->build_menu();
 ?>
 </body>
