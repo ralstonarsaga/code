@@ -12,6 +12,7 @@ class data extends CI_Controller {
 		$this->load->library('ajax_grocery_CRUD');
 		$this->load->model('user_model');
 		$this->load->library('session');
+		$this->load->library('twilio');
 		 
 		if (!$this->session->userdata('uid')) 
 		{
@@ -95,7 +96,7 @@ class data extends CI_Controller {
 			$crud->change_field_type('password', 'password');
 
 			$crud->field_type('access_key','dropdown',
-        	array('Developer' => 'Developer', 'Administrator' => 'Administrator', 'Teacher' => 'Teacher'));
+        	array('Developer' => 'Developer', 'Administrator' => 'Administrator', 'User' => 'User'));
 
 			$output = $crud->render();
 
@@ -189,6 +190,56 @@ class data extends CI_Controller {
 			$this->_data_output($output);
 	}
 
+	public function pickup_trash()
+	{
+			$crud = new grocery_CRUD();
+
+			$crud->set_theme('datatables');
+
+			$crud->set_table('transaction');
+			$crud->set_subject('Pick Up Trash');
+			$crud->where('trans_status',"Pending");
+
+			$crud->columns('trans_raw_mat_cat_id','trans_pick_time', 'trans_remarks','trans_qty','trans_status','trans_total_amount','trans_eco_points');
+
+			$crud->display_as('trans_raw_mat_cat_id','Raw Mat Cat')
+			     ->display_as('trans_qty','Qty')
+			     ->display_as('trans_pick_time','Pick Up Time')
+			     ->display_as('raw_mats_name','Raw Mat/s')
+			     ->display_as('trans_remarks','Remarks')
+			     ->display_as('trans_status','Status')
+			     ->display_as('trans_user_id','User ID')
+			     ->display_as('trans_total_amount','Total Amount')
+			     ->display_as('trans_eco_points','Earned Eco Points');
+
+			$crud->unset_add();
+			$crud->unset_delete();
+			$crud->unset_edit();
+
+			//$crud->add_action('More', '', 'demo/action_more', array($this,'notify'));
+
+			$crud->add_action('Notify', '', '','data/notify',array($this,'notify'));
+
+        	$output = $crud->render();
+
+			$this->_data_output($output);
+	}
+
+		function notify($primary_key , $row)
+		{
+			$total_update = array(
+			"trans_status" => 'Pick Up'
+			);	
+
+		   $this->db->update('transaction',$total_update,array('trans_id' => $primary_key));
+
+			$from = '+14157921956';
+			$to = '+639260868781';
+			$message = 'Your trash is now available for pick up from our Eco Rangers. ' . 'Transaction#: ' . $primary_key;
+    
+			$response = $this->twilio->sms($from, $to, $message);
+		}
+
 	public function transaction_management()
 	{
 			$crud = new grocery_CRUD();
@@ -198,23 +249,39 @@ class data extends CI_Controller {
 
 			$crud->set_table('transaction');
 			$crud->set_subject('Transaction');
+			$crud->where('trans_status',"Pending");
 
-			$crud->display_as('trans_user_id','User ID')
-			     ->display_as('trans_raw_mat_cat_id','Raw Mat Cat')
+			$crud->display_as('trans_raw_mat_cat_id','Raw Mat Cat')
 			     ->display_as('trans_qty','Qty')
-			     ->display_as('trans_pick_time','Pick Up Time')
+			     ->display_as('trans_pick_time','Scheduled Pick Up')
 			     ->display_as('raw_mats_name','Raw Mat/s')
 			     ->display_as('trans_remarks','Remarks')
+			     ->display_as('trans_user_id','User ID')
+			     ->display_as('trans_total_amount','Total Amount')
+			     ->display_as('trans_eco_points','Earned Eco Points')
 			     ->display_as('secret1','');
 
 			$crud->unset_columns(array('secret1'));
 
-		    $crud->set_relation_n_n('raw_mats_name', 'transaction_raw_mat', 'raw_material','tr_trans_id','tr_raw_mat_id','{raw_mat_name} {raw_mat_desc}','tr_priority');
+			$crud->columns('trans_raw_mat_cat_id','trans_pick_time', 'trans_remarks','trans_qty','trans_total_amount','trans_eco_points');
+
+		    $crud->set_relation_n_n('raw_mats_name', 'transaction_raw_mats', 'raw_material','tr_trans_id','tr_raw_mat_id','{raw_mat_name} {raw_mat_desc}','tr_priority');
 			
-			$crud->required_fields('trans_user_id','trans_pick_time','raw_mats_name','trans_qty');
-			$crud->set_relation('trans_raw_mat_cat_id','raw_mat_cat','{raw_mat_cat_name} - {raw_mat_cat_desc}');
+			$crud->required_fields('trans_pick_time','raw_mats_name','trans_qty');
+			$crud->set_relation('trans_raw_mat_cat_id','raw_mat_cat','raw_mat_cat_name');
 
+			// This is the set of code for using the callback -*begin ppp
+			$f=array('secret1','trans_raw_mat_cat_id','trans_pick_time', 'raw_mats_name','trans_remarks','trans_qty','trans_user_id');
 
+			$crud->add_fields($f); $crud->edit_fields($f); 
+			$crud->callback_add_field('secret1',array($this,'cat_raw_mat_selFunc')); 
+			$crud->callback_edit_field('secret1',array($this,'cat_raw_mat_selFunc')); // -*end     
+
+			//$crud->callback_column('t',array($this,'checkqty'));
+
+			$crud->callback_after_insert(array($this, 'send_order_confirmation'));
+
+			$crud->field_type('trans_user_id', 'hidden',null);
             $state = $crud->getState(); 
        	    if($state == 'edit')
 	        {
@@ -225,23 +292,56 @@ class data extends CI_Controller {
 	        {
 		        $crud->field_type('trans_user_id', 'hidden', $this->session->userdata('userid'));
 	        }
-
-
-			// This is the set of code for using the callback -*begin ppp
-			$f=array('secret1','trans_raw_mat_cat_id','trans_user_id','trans_pick_time', 'raw_mats_name','trans_remarks','trans_qty');
-
-			$crud->add_fields($f); $crud->edit_fields($f); 
-			$crud->callback_add_field('secret1',array($this,'cat_raw_mat_selFunc')); 
-			$crud->callback_edit_field('secret1',array($this,'cat_raw_mat_selFunc')); // -*end     
-
-
  
 			$crud->set_rules('raw_mats_name', 'raw_mats_name', 'callback_check_multiselect_raw_mat_field');
 
-	        $output = $crud->render();       
+	        $output = $crud->render();  
+
+	        $state = $crud->getState(); 
+       	    if($state == 'add')
+	        {
+				$js='<script>$(\'select[name="trans_status"] option[value="New"]\').attr("selected", "selected");</script>';
+				$output->output .= $js;	
+
+
+	        }     
 
 			$this->_data_output($output);
 	}
+
+
+
+		function send_order_confirmation($post_array, $primary_key)
+		{
+
+			$mysqli = new mysqli("localhost", "root", "", "hackathon");
+			$result = $mysqli->query("SELECT distinct (c.raw_mat_price_id * a.trans_qty) as total_qty, (c.raw_mat_price_id * a.trans_qty)*10 as eco_points FROM transaction a join transaction_raw_mats b  on a.trans_id=b.tr_trans_id join raw_material c on b.tr_raw_mat_id=c.raw_mat_id WHERE a.trans_id ='".$primary_key."'");	
+            $total_qty=0;
+            $eco_points=0;
+
+		    while($row_funct = mysqli_fetch_array($result))
+			{
+		          $total_qty= $total_qty + $row_funct['total_qty'];
+		          $eco_points= $eco_points + $row_funct['eco_points'];
+			}
+
+			$userid=$this->session->userdata('userid');
+			$total_update = array(
+			"trans_total_amount" => $total_qty,
+			"trans_user_id" => $user_id,
+			"trans_eco_points" => $eco_points,
+			"trans_status" => 'Pending'
+			);	
+
+		    $this->db->update('transaction',$total_update,array('trans_id' => $primary_key));
+
+			$from = '+14157921956';
+			$to = '+639260868781';
+			$message = 'You help save our planet! You just earned '. $eco_points . ' Eco-Points. Transaction#: ' . $primary_key;
+    
+			$response = $this->twilio->sms($from, $to, $message);
+		}
+
 
 	function check_multiselect_raw_mat_field($value)
 	{
@@ -260,16 +360,16 @@ class data extends CI_Controller {
 
 		if($raw_mat_cat === NULL || is_null($raw_mat_cat))	
 		{
-		 $result = $mysqli->query("SELECT distinct raw_mat_id, raw_mat_desc, raw_mat_cat_id, raw_mat_cat_desc FROM vw_raw_mat_per_cat");		
+		 $result = $mysqli->query("SELECT distinct raw_mat_id, raw_mat_name, raw_mat_cat_name FROM vw_raw_mat_per_cat");		
 		}
 		else
 		{
-		$result = $mysqli->query("SELECT distinct raw_mat_id, raw_mat_desc, raw_mat_cat_id, raw_mat_cat_desc FROM vw_raw_mat_per_cat WHERE raw_mat_cat_id ='".$raw_mat_cat."'");	
+		$result = $mysqli->query("SELECT distinct raw_mat_id, raw_mat_name, raw_mat_cat_name FROM vw_raw_mat_per_cat WHERE raw_mat_cat_id ='".$raw_mat_cat."'");	
 		}	
 
 		while($row_funct = mysqli_fetch_array($result))
 		{
-	             echo "<option value='".$row_funct['raw_mat_id']."'>".$row_funct['raw_mat_desc']." ".$row_funct['raw_mat_cat_id']." ".$row_funct['raw_mat_cat_desc']."</option>";
+	             echo "<option value='".$row_funct['raw_mat_id']."'>".$row_funct['raw_mat_name']." ".$row_funct['raw_mat_cat_name']."</option>";
 		}
 	}
 

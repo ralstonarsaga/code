@@ -12,16 +12,27 @@
                 <ul class="nav navbar-nav">
                     
                     <?php if ($this->session->userdata('login')){ ?>
+
+                            <li><a href='<?php echo base_url('classifier')?>'>Classify</a></li>
+                            <li><a href='<?php echo base_url('data/transaction_management')?>'>Sell</a></li> 
+                    
+
+                    <?php if ($this->session->userdata('access_key')=='Developer'){ ?>
                             <li><a href='<?php echo base_url('data/user_management')?>'>User</a></li>     
                             <li><a href='<?php echo base_url('data/raw_mat_management')?>'>Raw Mat</a></li> 
                             <li><a href='<?php echo base_url('data/reward_management')?>'>Reward</a></li> 
                             <li><a href='<?php echo base_url('data/raw_mat_cat_management')?>'>Raw Mat Cat</a></li> 
                             <li><a href='<?php echo base_url('data/raw_mat_uom_management')?>'>Raw Mat UOM</a></li> 
-                            <li><a href='<?php echo base_url('data/transaction_management')?>'>Transaction</a></li> 
+                            <li><a href='<?php echo base_url('data/pickup_trash')?>'>Pick Up Trash</a></li> 
                             <li><a href='<?php echo base_url('data/disposal_management')?>'>Disposal</a></li> 
                             <li><a href='<?php echo base_url('data/junkshop_management')?>'>JunkShop</a></li>
-                            <li><a href='<?php echo base_url('twilio_demo')?>'>Twilio</a></li>
-                            <li><a href='<?php echo base_url('classifier')?>'>Classify</a></li>
+                    <?php }    
+
+                    else { ?>
+                    <?php } ?>     
+
+
+
                     <?php } ?>
                 
                 </ul>
